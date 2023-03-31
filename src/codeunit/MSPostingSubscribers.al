@@ -3,10 +3,15 @@ codeunit 50100 "MS Posting Subscribers"
     [EventSubscriber(ObjectType::Table, Database::"Invoice Posting Buffer", 'OnAfterPrepareSales', '', true, true)]
     local procedure InvoicePostingBufferOnAfterPrepareSales(var InvoicePostingBuffer: Record "Invoice Posting Buffer"; var SalesLine: Record "Sales Line")
     begin
-        //Group G/L lines by value from the field "MS New Posting Line"
-        InvoicePostingBuffer."Additional Grouping Identifier" := CopyStr(Format(SalesLine."MS New Posting Line"), 1, 20);
         //Transfer for the GL Value
         InvoicePostingBuffer."MS New Posting Line" := SalesLine."MS New Posting Line";
+    end;
+
+    [EventSubscriber(ObjectType::Table, Database::"Invoice Posting Buffer", 'OnAfterBuildPrimaryKey', '', true, true)]
+    local procedure InvoicePostingBufferOnAfterBuildPrimaryKey(var InvoicePostingBuffer: Record "Invoice Posting Buffer")
+    begin
+        //Group G/L lines by value from the field "MS New Posting Line"
+        InvoicePostingBuffer."Group ID" += InvoicePostingBuffer.PadField(Format(InvoicePostingBuffer."MS New Posting Line"), StrLen(Format(InvoicePostingBuffer."MS New Posting Line")));
     end;
 
     [EventSubscriber(ObjectType::Table, Database::"Invoice Posting Buffer", 'OnUpdateOnBeforeModify', '', true, true)]
